@@ -6,7 +6,7 @@ plugins {
 
 group = 'com.ilham'
 version = '0.0.1-SNAPSHOT'
-description = 'order-service'
+description = 'product-service'
 
 java {
     toolchain {
