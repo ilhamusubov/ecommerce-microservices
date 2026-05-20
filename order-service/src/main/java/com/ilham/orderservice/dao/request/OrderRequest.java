@@ -10,6 +10,5 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 public class OrderRequest {
-    private String name;
-    private BigDecimal totalPrice;
+    private Long productId;
 }

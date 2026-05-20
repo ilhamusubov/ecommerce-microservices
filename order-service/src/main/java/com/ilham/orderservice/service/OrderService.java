@@ -1,7 +1,9 @@
 package com.ilham.orderservice.service;
 
+import com.ilham.orderservice.client.ProductClient;
 import com.ilham.orderservice.dao.request.OrderRequest;
 import com.ilham.orderservice.dao.response.OrderResponse;
+import com.ilham.orderservice.dao.response.ProductResponse;
 import com.ilham.orderservice.entity.OrderEntity;
 import com.ilham.orderservice.enums.OrderStatus;
 import com.ilham.orderservice.jwt.JwtService;
@@ -22,17 +24,20 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final OrderMapper orderMapper;
     private final JwtService jwtService;
+    private final ProductClient productClient;
 
     public OrderResponse createOrder(OrderRequest orderRequest, HttpServletRequest request){
         log.info("ActionLog.createOrder.starts");
 
         Long userId = jwtService.extractUserIdFromAccessToken(request);
 
+        ProductResponse product = productClient.getProduct(orderRequest.getProductId());
+
         OrderEntity orderEntity = OrderEntity.builder()
                 .userId(userId)
-                .name(orderRequest.getName())
+                .name(product.getName())
                 .status(OrderStatus.PENDING)
-                .totalPrice(orderRequest.getTotalPrice())
+                .totalPrice(product.getPrice())
                 .build();
 
         orderRepository.save(orderEntity);

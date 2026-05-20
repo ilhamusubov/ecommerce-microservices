@@ -24,4 +24,13 @@ public class ProductService {
         log.info("ActionLog.createProduct.end");
         return productMapper.entityToResponse(productEntity);
     }
+
+
+    public ProductResponse getProduct(Long id) {
+        log.info("ActionLog.getProduct.start");
+        ProductEntity productEntity = productRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Product tapilmadi"));
+        log.info("ActionLog.getProduct.end");
+        return productMapper.entityToResponse(productEntity);
+    }
 }

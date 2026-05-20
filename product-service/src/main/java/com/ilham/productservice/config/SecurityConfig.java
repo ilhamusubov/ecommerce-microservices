@@ -1,7 +1,7 @@
 package com.ilham.productservice.config;
 
 import com.ilham.productservice.jwt.JwtAuthenticationFilter;
-import jakarta.ws.rs.HttpMethod;
+import org.springframework.http.HttpMethod;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -30,6 +30,8 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/swagger-ui.html"
                         ).permitAll()
+
+//                        .requestMatchers("/api/v1/products/get-product/**").permitAll()
 
                         .requestMatchers(HttpMethod.POST, "/api/v1/products/**")
                         .hasRole("ADMIN")
