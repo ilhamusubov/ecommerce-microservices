@@ -2,6 +2,7 @@ package com.ilham.orderservice.service;
 
 import com.ilham.orderservice.client.ProductClient;
 import com.ilham.orderservice.dao.request.OrderRequest;
+import com.ilham.orderservice.dao.response.OrderNotification;
 import com.ilham.orderservice.dao.response.OrderResponse;
 import com.ilham.orderservice.dao.response.ProductResponse;
 import com.ilham.orderservice.entity.OrderEntity;
@@ -13,6 +14,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.query.Order;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.mail.MailSender;
 import org.springframework.stereotype.Service;
 
 
@@ -25,11 +28,14 @@ public class OrderService {
     private final OrderMapper orderMapper;
     private final JwtService jwtService;
     private final ProductClient productClient;
+    private final RabbitTemplate rabbitTemplate;
 
     public OrderResponse createOrder(OrderRequest orderRequest, HttpServletRequest request){
         log.info("ActionLog.createOrder.starts");
 
         Long userId = jwtService.extractUserIdFromAccessToken(request);
+
+        String email = jwtService.extractEmailFromAccessToken(request);
 
         ProductResponse product = productClient.getProduct(orderRequest.getProductId());
 
@@ -41,6 +47,15 @@ public class OrderService {
                 .build();
 
         orderRepository.save(orderEntity);
+
+        OrderNotification notification = OrderNotification.builder()
+                .orderId(orderEntity.getId())
+                .userId(userId)
+                .productName(product.getName())
+                .email(email)
+                .build();
+
+        rabbitTemplate.convertAndSend("order.notification", notification);
 
         log.info("ActionLog.createOrder.finished");
         return orderMapper.orderToOrderResponse(orderEntity);

@@ -33,6 +33,19 @@ public class JwtService {
         }
     }
 
+    public String extractEmailFromAccessToken(HttpServletRequest request) {
+
+        String token = request.getHeader("Authorization");
+
+        if (token == null || !token.startsWith("Bearer ")) {
+            throw new IllegalArgumentException("Invalid token");
+        }
+
+        token = token.replace("Bearer ", "");
+
+        return extractUsernameByToken(token);
+    }
+
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = extractAllClaims(token);
         return claimsResolver.apply(claims);
