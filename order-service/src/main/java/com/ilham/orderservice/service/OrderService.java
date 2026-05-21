@@ -7,6 +7,7 @@ import com.ilham.orderservice.dao.response.OrderResponse;
 import com.ilham.orderservice.dao.response.ProductResponse;
 import com.ilham.orderservice.entity.OrderEntity;
 import com.ilham.orderservice.enums.OrderStatus;
+import com.ilham.orderservice.event.OrderCreatedEvent;
 import com.ilham.orderservice.jwt.JwtService;
 import com.ilham.orderservice.mapper.OrderMapper;
 import com.ilham.orderservice.repository.OrderRepository;
@@ -17,6 +18,8 @@ import org.hibernate.query.Order;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.mail.MailSender;
 import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
 
 
 @Service
@@ -39,11 +42,15 @@ public class OrderService {
 
         ProductResponse product = productClient.getProduct(orderRequest.getProductId());
 
+        if(product.getStock() < orderRequest.getQuantity()) {
+            throw new RuntimeException("Not enough stock");
+        }
+
         OrderEntity orderEntity = OrderEntity.builder()
                 .userId(userId)
                 .name(product.getName())
                 .status(OrderStatus.PENDING)
-                .totalPrice(product.getPrice())
+                .totalPrice(product.getPrice().multiply(BigDecimal.valueOf(orderRequest.getQuantity())))
                 .build();
 
         orderRepository.save(orderEntity);
@@ -56,6 +63,13 @@ public class OrderService {
                 .build();
 
         rabbitTemplate.convertAndSend("order.notification", notification);
+
+        OrderCreatedEvent orderCreatedEvent = OrderCreatedEvent.builder()
+                .productId(product.getId())
+                .quantity(orderRequest.getQuantity())
+                .build();
+
+        rabbitTemplate.convertAndSend("product.stock", orderCreatedEvent);
 
         log.info("ActionLog.createOrder.finished");
         return orderMapper.orderToOrderResponse(orderEntity);

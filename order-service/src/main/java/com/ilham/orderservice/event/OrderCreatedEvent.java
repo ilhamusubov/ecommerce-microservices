@@ -1,15 +1,15 @@
-package com.ilham.orderservice.dao.request;
+package com.ilham.orderservice.event;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.math.BigDecimal;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class OrderRequest {
+@Builder
+public class OrderCreatedEvent {
     private Long productId;
-    private Integer quantity;
+    private int quantity;
 }

@@ -1,4 +1,4 @@
-package com.ilham.orderservice.config;
+package com.ilham.productservice.config;
 
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -13,7 +13,7 @@ public class RabbitMQConfig {
 
     @Bean
     public Queue queue() {
-        return new Queue("order.notification");
+        return new Queue("product.stock");
     }
 
     @Bean
